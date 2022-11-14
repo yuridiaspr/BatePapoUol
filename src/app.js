@@ -132,7 +132,14 @@ server.get("/messages", async (req, res) => {
     const user = req.headers.user;
     let listMessages = await db
       .collection("messages")
-      .find({ $or: [{ to: "Todos" }, { to: user }, { from: user }] })
+      .find({
+        $or: [
+          { type: "status" },
+          { type: "message" },
+          { from: user },
+          { to: user },
+        ],
+      })
       .toArray();
 
     if (req.query.limit) {
@@ -146,6 +153,50 @@ server.get("/messages", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+// Post in rout /status
+server.post("/status", async (req, res) => {
+  try {
+    const user = req.headers.user;
+
+    const refreshUser = await db
+      .collection("participants")
+      .findOne({ name: user });
+
+    if (!refreshUser) {
+      res.sendStatus(404);
+      return;
+    }
+
+    await db
+      .collection("participants")
+      .updateOne({ name: user }, { $set: { lastStatus: Date.now() } });
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
+async function idleTime() {
+  const result = await db.collection("participants").find().toArray();
+
+  result.map(async (user) =>
+    Date.now() - user.lastStatus > 10000
+      ? (await db.collection("messages").insertOne({
+          from: user.name,
+          to: "Todos",
+          text: "sai da sala...",
+          type: "status",
+          time: dayjs(Date.now()).format("HH:mm:ss"),
+        }),
+        await db.collection("participants").deleteOne({ name: user.name }))
+      : null
+  );
+}
+
+setInterval(idleTime, 15000);
 
 server.listen(5000, () => {
   console.log("Rodando em http://localhost:5000");
