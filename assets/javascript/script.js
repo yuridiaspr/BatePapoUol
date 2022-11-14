@@ -21,7 +21,7 @@ function registrarParticipante() {
 function entrarNaSala() {
   carregarMensagens();
   carregarParticipantes();
-  
+
   agendarAtualizacaoDeMensagens();
   agendarAtualizacaoDeParticipantes();
   agendarAtualizacaoDeStatus();
@@ -32,8 +32,8 @@ function carregarMensagens() {
 
   const requisicao = axios.get("http://localhost:5000/messages?limit=50", {
     headers: {
-      User: nome
-    }
+      User: nome,
+    },
   });
   requisicao.then(processarMensagens);
 }
@@ -41,8 +41,8 @@ function carregarMensagens() {
 function carregarParticipantes() {
   const requisicao = axios.get("http://localhost:5000/participants", {
     headers: {
-      User: nome
-    }
+      User: nome,
+    },
   });
   requisicao.then(processarParticipantes);
 }
@@ -60,11 +60,15 @@ function agendarAtualizacaoDeStatus() {
 }
 
 function atualizarStatus() {
-  axios.post("http://localhost:5000/status", {}, {
-    headers: {
-      User: nome
+  axios.post(
+    "http://localhost:5000/status",
+    {},
+    {
+      headers: {
+        User: nome,
+      },
     }
-  });
+  );
 }
 
 function processarMensagens(resposta) {
@@ -92,24 +96,24 @@ function enviarMensagem() {
   const texto = input.value;
   input.value = "";
 
-  if(texto === "") return;
-   
+  if (texto === "") return;
+
   const dados = {
     to: destinatario,
     text: texto,
-    type: tipoMensagem
+    type: tipoMensagem,
   };
 
   mensagens.push({
     from: nome,
-    ...dados
+    ...dados,
   });
   renderizarMensagens();
 
   const requisicao = axios.post("http://localhost:5000/messages", dados, {
     headers: {
-      User: nome
-    }
+      User: nome,
+    },
   });
 
   requisicao.catch(atualizarPagina);
@@ -123,8 +127,8 @@ function toggleParticipantes() {
   const menu = document.querySelector(".menu");
   const fundo = document.querySelector(".menu-fundo");
 
-  menu.classList.toggle('escondido');
-  fundo.classList.toggle('fundo-escondido');
+  menu.classList.toggle("escondido");
+  fundo.classList.toggle("fundo-escondido");
 }
 
 function trocarDestinatario(elemento) {
@@ -138,14 +142,14 @@ function trocarVisibilidade(visibilidade) {
   const liPublico = document.querySelector(".visibilidade-publico");
   const liPrivado = document.querySelector(".visibilidade-privado");
 
-  if (visibilidade === 'publico') {
+  if (visibilidade === "publico") {
     tipoMensagem = "message";
-    liPublico.classList.add('selecionado');
-    liPrivado.classList.remove('selecionado');
+    liPublico.classList.add("selecionado");
+    liPrivado.classList.remove("selecionado");
   } else {
     tipoMensagem = "private_message";
-    liPublico.classList.remove('selecionado');
-    liPrivado.classList.add('selecionado');
+    liPublico.classList.remove("selecionado");
+    liPrivado.classList.add("selecionado");
   }
 
   atualizarEnviando();
@@ -156,20 +160,17 @@ function atualizarEnviando() {
 
   elemento.innerText = "Enviando para " + destinatario;
 
-  if(tipoMensagem === "private_message") {
+  if (tipoMensagem === "private_message") {
     elemento.innerText += " (reservadamente)";
   }
 }
 
-
-
 // Renders
 
-
 const classesMensagens = {
-  status: 'entrada-saida',
-  private_message: 'conversa-privada',
-  message: 'conversa-publica'
+  status: "entrada-saida",
+  private_message: "conversa-privada",
+  message: "conversa-publica",
 };
 
 function renderizarMensagens() {
@@ -184,8 +185,8 @@ function renderizarMensagens() {
         <div class="conteudo-mensagem">
           ${
             mensagem.time !== undefined
-            ? `<span class="horario">(${mensagem.time})</span>`
-            : ``
+              ? `<span class="horario">(${mensagem.time})</span>`
+              : ``
           }
 
           <span>
@@ -194,8 +195,8 @@ function renderizarMensagens() {
 
           ${
             mensagem.type === "private_message"
-            ? `<span> reservadamente para </span>`
-            : `<span> para </span>`
+              ? `<span> reservadamente para </span>`
+              : `<span> para </span>`
           }
 
           <strong>${mensagem.to}</strong>
@@ -203,8 +204,11 @@ function renderizarMensagens() {
         </div>
         <div class="acoes-mensagem">
           ${
-            ((mensagem.from === nome && mensagem.type.indexOf("message") > -1 && mensagem.time) || "") &&
-             `
+            ((mensagem.from === nome &&
+              mensagem.type.indexOf("message") > -1 &&
+              mensagem.time) ||
+              "") &&
+            `
               <button class="editar" onclick="editarMensagem(this, '${mensagem._id}')">
                 <ion-icon name="create"></ion-icon>
               </button>
@@ -221,7 +225,13 @@ function renderizarMensagens() {
 
   ul.innerHTML = html;
 
-  setTimeout(() => document.querySelector(".mensagens-container li:last-child").scrollIntoView(), 0);
+  setTimeout(
+    () =>
+      document
+        .querySelector(".mensagens-container li:last-child")
+        .scrollIntoView(),
+    0
+  );
 }
 
 function renderizarParticipantes() {
@@ -233,11 +243,13 @@ function renderizarParticipantes() {
     const participante = participantes[i];
 
     html += `
-      <li onclick="trocarDestinatario(this)" class="${participante.name === destinatario ? "selecionado" : ""}">
+      <li onclick="trocarDestinatario(this)" class="${
+        participante.name === destinatario ? "selecionado" : ""
+      }">
         ${
           participante.name === "Todos"
-           ? `<ion-icon name='people-sharp'></ion-icon>`
-           : `<ion-icon name='person-circle'></ion-icon>`
+            ? `<ion-icon name='people-sharp'></ion-icon>`
+            : `<ion-icon name='person-circle'></ion-icon>`
         }
 
         <span class="nome">${participante.name}</span>
@@ -259,9 +271,10 @@ function editarMensagem(elemento, id) {
   editing = true;
 
   buscarMensagens = false;
-  conteudoMensagem = elemento.parentNode.parentNode.querySelector(".conteudo-mensagem");
+  conteudoMensagem =
+    elemento.parentNode.parentNode.querySelector(".conteudo-mensagem");
   oldHtml = conteudoMensagem.innerHTML;
-  mensagem = mensagens.find(m => m._id === id);
+  mensagem = mensagens.find((m) => m._id === id);
 
   conteudoMensagem.innerHTML = `
     <input type="text" value="${mensagem.text}" autofocus placeholder="Digite o novo valor da mensagem" onkeydown="enviarMensagemEditada(event, '${id}')" class="mensagem-editada" />
@@ -278,20 +291,27 @@ function enviarMensagemEditada(event, id) {
     conteudoMensagem.innerHTML = oldHtml;
     conteudoMensagem.querySelector(".text").innerHTML = newMessage;
 
-    axios.put(`http://localhost:5000/messages/${id}`, {
-      to: mensagem.to,
-      text: newMessage,
-      type: mensagem.type
-    }, {
-      headers: {
-        User: nome
-      }
-    }).catch(err => {
-      console.error('Não foi possível editar mensagem!');
-      console.error(err);
-    }).then(() => {
-      buscarMensagens = true;
-    });
+    axios
+      .put(
+        `http://localhost:5000/messages/${id}`,
+        {
+          to: mensagem.to,
+          text: newMessage,
+          type: mensagem.type,
+        },
+        {
+          headers: {
+            User: nome,
+          },
+        }
+      )
+      .catch((err) => {
+        console.error("Não foi possível editar mensagem!");
+        console.error(err);
+      })
+      .then(() => {
+        buscarMensagens = true;
+      });
   }
 }
 
@@ -299,13 +319,15 @@ function excluirMensagem(id) {
   const confirmacao = confirm("Deseja realmente excluir esta mensagem?");
 
   if (confirmacao) {
-    axios.delete(`http://localhost:5000/messages/${id}`, {
-      headers: {
-        User: nome
-      }
-    }).catch(err => {
-      console.error('Não foi possível apagar mensagem!');
-      console.error(err);
-    });
+    axios
+      .delete(`http://localhost:5000/messages/${id}`, {
+        headers: {
+          User: nome,
+        },
+      })
+      .catch((err) => {
+        console.error("Não foi possível apagar mensagem!");
+        console.error(err);
+      });
   }
 }
